@@ -3,7 +3,21 @@ cheerio = require "cheerio"
 
 ROOT_URL = "https://www.comnet-fukuoka.jp/web/"
 
-generate_tasks = (instance, page, ward="中央区") ->
+generate_tasks = (instance, page, ward="中央区", place="舞鶴公園", room="野球場") ->
+
+  search_and_move = (target) ->
+    page.evaluate ->
+      document.body.innerHTML
+    .then (html) ->
+      $ = cheerio.load html
+      href = $("a").filter ->
+        name = $("img", @).attr "alt"
+        name.includes target or target.includes name
+      .attr "href"
+
+      script = "function() {" + href.substring("javaScript:".length) + ";}"
+      page.evaluateJavaScript script
+
   [
     url: "https://www.comnet-fukuoka.jp/web/rsvWTransUserAttestationAction.do"
     action: ->
@@ -25,20 +39,22 @@ generate_tasks = (instance, page, ward="中央区") ->
   ,
     url: "https://www.comnet-fukuoka.jp/web/rsvWTransInstSrchAreaAction.do"
     action: ->
-      page.evaluate ->
-        document.body.innerHTML
-      .then (html) ->
-        $ = cheerio.load html
-        href = $("a").filter ->
-          name = $("img", @).attr "alt"
-          name.includes ward or ward.includes name
-        .attr "href"
-
-        script = "function() {" + href.substring("javaScript:".length) + ";}"
-        page.evaluateJavaScript script
+      search_and_move ward
   ,
     url: "https://www.comnet-fukuoka.jp/web/rsvWTransInstSrchBuildAction.do"
     action: ->
+      search_and_move place
+  ,
+    url: "https://www.comnet-fukuoka.jp/web/rsvWTransInstSrchInstAction.do"
+    action: ->
+      search_and_move room
+  ,
+    url: "https://www.comnet-fukuoka.jp/web/rsvWTransInstSrchDayWeekAction.do"
+    action: ->
+      page.evaluate ->
+        document.body.innerHTML
+      .then (html)->
+        console.log html
       page.render "test.png"
       page.close()
       instance.exit()
@@ -57,7 +73,7 @@ phantom.create().then (ph) ->
             if res is url
               resolve res
             else
-              setTimeout checker, 1000
+              setTimeout checker, 1500
 
     page.open(ROOT_URL)
       .then ->
@@ -71,3 +87,5 @@ phantom.create().then (ph) ->
                 runner()
               else
                 resolve()
+            .catch (reason) ->
+              console.log reason
