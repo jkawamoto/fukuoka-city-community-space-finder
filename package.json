@@ -5,7 +5,9 @@
   "main": "index.js",
   "author": "Junpei Kawamoto <kawamoto.junpei@gmail.com>",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "gulp",
+    "coffee": "coffee ./src/main.coffee"
   },
   "dependencies": {
     "argv": "0.0.2",

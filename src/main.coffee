@@ -3,7 +3,7 @@ cheerio = require "cheerio"
 
 ROOT_URL = "https://www.comnet-fukuoka.jp/web/"
 
-generate_tasks = (instance, page) ->
+generate_tasks = (instance, page, ward="中央区") ->
   [
     url: "https://www.comnet-fukuoka.jp/web/rsvWTransUserAttestationAction.do"
     action: ->
@@ -24,6 +24,20 @@ generate_tasks = (instance, page) ->
         window.doAction action, gRsvWTransInstSrchAreaAction
   ,
     url: "https://www.comnet-fukuoka.jp/web/rsvWTransInstSrchAreaAction.do"
+    action: ->
+      page.evaluate ->
+        document.body.innerHTML
+      .then (html) ->
+        $ = cheerio.load html
+        href = $("a").filter ->
+          name = $("img", @).attr "alt"
+          name.includes ward or ward.includes name
+        .attr "href"
+
+        script = "function() {" + href.substring("javaScript:".length) + ";}"
+        page.evaluateJavaScript script
+  ,
+    url: "https://www.comnet-fukuoka.jp/web/rsvWTransInstSrchBuildAction.do"
     action: ->
       page.render "test.png"
       page.close()
