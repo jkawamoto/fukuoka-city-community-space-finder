@@ -3,7 +3,7 @@ cheerio = require "cheerio"
 
 ROOT_URL = "https://www.comnet-fukuoka.jp/web/"
 
-module.exports = (ward="中央区", place="舞鶴公園", room="野球場") ->
+module.exports = (ward, place, room) ->
 
   generate_tasks = (instance, page) ->
 
