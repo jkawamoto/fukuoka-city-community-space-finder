@@ -1,4 +1,6 @@
 #! /usr/bin/env coffee
-scraper = require "../lib/scraper"
+{wards, search} = require "../lib/scraper"
 
-scraper "中央区", "舞鶴公園", "野球場"
+wards().then (res) ->
+  console.log res
+# scraper "中央区", "舞鶴公園", "野球場"
