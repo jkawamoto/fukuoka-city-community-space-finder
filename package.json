@@ -1,13 +1,21 @@
 {
-  "name": "fukuoka-community-center-search",
+  "name": "community-centre-search-fukuoka",
   "version": "0.0.1",
-  "description": "Search available community centers in Fukuoka.",
+  "description": "Search available community centres in Fukuoka.",
   "main": "index.js",
   "author": "Junpei Kawamoto <kawamoto.junpei@gmail.com>",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "gulp",
     "coffee": "coffee ./src/main.coffee"
+  },
+  "repository": {
+    "type" : "git",
+    "url" : "https://github.com/jkawamoto/community-centre-search-fukuoka.git"
+  },
+  "homepage": "https://github.com/jkawamoto/community-centre-search-fukuoka",
+  "bugs": {
+    "url" : "https://github.com/jkawamoto/community-centre-search-fukuoka/issues"
   },
   "dependencies": {
     "argv": "0.0.2",
