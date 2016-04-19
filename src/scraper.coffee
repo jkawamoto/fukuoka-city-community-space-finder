@@ -2,6 +2,16 @@ phantom = require "phantom"
 cheerio = require "cheerio"
 
 ROOT_URL = "https://www.comnet-fukuoka.jp/web/"
+ATTESTATION_URL =
+  "https://www.comnet-fukuoka.jp/web/rsvWTransUserAttestationAction.do"
+VACANT_URL =
+  "https://www.comnet-fukuoka.jp/web/rsvWTransInstSrchVacantAction.do"
+AREA_URL =
+  "https://www.comnet-fukuoka.jp/web/rsvWTransInstSrchAreaAction.do"
+BUILDING_URL =
+  "https://www.comnet-fukuoka.jp/web/rsvWTransInstSrchBuildAction.do"
+INSTITUTION_URL =
+  "https://www.comnet-fukuoka.jp/web/rsvWTransInstSrchInstAction.do"
 
 IGNORED_KEYWORD = "すべて"
 
@@ -74,7 +84,7 @@ run = (generator) ->
 # @param page [Page] Page object.
 # @return [Array] array of tasks which contain url and action.
 generate_common_tasks = (page) -> [
-  url: "https://www.comnet-fukuoka.jp/web/rsvWTransUserAttestationAction.do"
+  url: ATTESTATION_URL
   action: ->
     page.evaluate ->
       action = if window._dom is 3
@@ -83,7 +93,7 @@ generate_common_tasks = (page) -> [
         document.formWTransInstSrchVacantAction
       window.doAction action, gRsvWTransInstSrchVacantAction
 ,
-  url: "https://www.comnet-fukuoka.jp/web/rsvWTransInstSrchVacantAction.do"
+  url: VACANT_URL
   action: ->
     page.evaluate ->
       action = if window._dom is 3
@@ -122,9 +132,9 @@ module.exports =
 
     run (page) ->
 
-      tasks = generate_common_tasks page
-      tasks.push
-        url: "https://www.comnet-fukuoka.jp/web/rsvWTransInstSrchAreaAction.do"
+      generate_common_tasks page
+      .concat [
+        url: AREA_URL
         action: ->
           page.evaluate ->
             document.body.innerHTML
@@ -133,8 +143,7 @@ module.exports =
             $("a").map ->
               $("img[src=\"image/bw_tiikiimg.gif\"]", @).attr "alt"
             .toArray()
-
-      return tasks
+      ]
 
   # Returns a list of buildings in a given area.
   #
@@ -144,13 +153,13 @@ module.exports =
 
     run (page) ->
 
-      tasks = generate_common_tasks page
-      tasks.push
-        url: "https://www.comnet-fukuoka.jp/web/rsvWTransInstSrchAreaAction.do"
+      generate_common_tasks page
+      .concat [
+        url: AREA_URL
         action: ->
           search_and_move page, area
-      tasks.push
-        url: "https://www.comnet-fukuoka.jp/web/rsvWTransInstSrchBuildAction.do"
+      ,
+        url: BUILDING_URL
         action: ->
           page.evaluate ->
             document.body.innerHTML
@@ -161,11 +170,39 @@ module.exports =
             .toArray()
             .filter (v) ->
               v isnt IGNORED_KEYWORD
+      ]
 
-      return tasks
+  # Returns a list of institutions in a given area and building.
+  #
+  # @param area [String] name of the area.
+  # @param building [String] name of the building.
+  # @return [Promise] which returns a list of institutions.
+  institution: (area, building) ->
 
+    run (page) ->
 
-
+      generate_common_tasks page
+      .concat [
+        url: AREA_URL
+        action: ->
+          search_and_move page, area
+      ,
+        url: BUILDING_URL
+        action: ->
+          search_and_move page, building
+      ,
+        url: INSTITUTION_URL
+        action: ->
+          page.evaluate ->
+            document.body.innerHTML
+          .then (html) ->
+            $ = cheerio.load html
+            $("a").map ->
+              $("img[src=\"image/bw_institutionimg.gif\"]", @).attr "alt"
+            .toArray()
+            .filter (v) ->
+              v isnt IGNORED_KEYWORD
+      ]
 
   search: (ward, place, room) ->
 
@@ -185,7 +222,7 @@ module.exports =
           page.evaluateJavaScript script
 
       [
-        url: "https://www.comnet-fukuoka.jp/web/rsvWTransUserAttestationAction.do"
+        url: ATTESTATION_URL
         action: ->
           page.evaluate ->
             action = if window._dom is 3
@@ -194,7 +231,7 @@ module.exports =
               document.formWTransInstSrchVacantAction
             window.doAction action, gRsvWTransInstSrchVacantAction
       ,
-        url: "https://www.comnet-fukuoka.jp/web/rsvWTransInstSrchVacantAction.do"
+        url: VACANT_URL
         action: ->
           page.evaluate ->
             action = if window._dom is 3
@@ -203,15 +240,15 @@ module.exports =
               document.formWTransInstSrchAreaAction
             window.doAction action, gRsvWTransInstSrchAreaAction
       ,
-        url: "https://www.comnet-fukuoka.jp/web/rsvWTransInstSrchAreaAction.do"
+        url: AREA_URL
         action: ->
           search_and_move ward
       ,
-        url: "https://www.comnet-fukuoka.jp/web/rsvWTransInstSrchBuildAction.do"
+        url: BUILDING_URL
         action: ->
           search_and_move place
       ,
-        url: "https://www.comnet-fukuoka.jp/web/rsvWTransInstSrchInstAction.do"
+        url: INSTITUTION_URL
         action: ->
           search_and_move room
       ,
