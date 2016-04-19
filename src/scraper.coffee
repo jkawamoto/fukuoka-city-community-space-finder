@@ -3,6 +3,7 @@ cheerio = require "cheerio"
 
 ROOT_URL = "https://www.comnet-fukuoka.jp/web/"
 
+IGNORED_KEYWORD = "すべて"
 
 # Execute a given tasks via PhantomJS.
 #
@@ -10,7 +11,7 @@ ROOT_URL = "https://www.comnet-fukuoka.jp/web/"
 # @return [Promise] which will pass the result.
 run = (generator) ->
 
-  new Promise (resolve, _) ->
+  new Promise (resolve, reject) ->
 
     phantom.create().then (instance) ->
 
@@ -51,6 +52,20 @@ run = (generator) ->
             instance.exit()
             resolve res
 
+          .catch (reason) ->
+            console.error reason
+            # Clean up.
+            page.close()
+            ph.exit()
+            reject reason
+
+      .catch (reason) ->
+        reject reason
+
+    .catch (reason) ->
+      reject reason
+
+
 
 # Generate common tasks.
 #
@@ -79,12 +94,31 @@ generate_common_tasks = (page) -> [
 ]
 
 
+# Create a task which searches a target and moves to it.
+#
+# @param page [Page] Page object.
+# @param target [String] Keyward of the target.
+# @return [Promise] Promise object.
+search_and_move = (page, target) ->
+  page.evaluate ->
+    document.body.innerHTML
+  .then (html) ->
+    $ = cheerio.load html
+    href = $("a").filter ->
+      name = $("img", @).attr "alt"
+      name.includes target or target.includes name
+    .attr "href"
+
+    script = "function() {" + href.substring("javaScript:".length) + ";}"
+    page.evaluateJavaScript script
+
+
 module.exports =
 
-  # Returns a list of wards in Fukuoka city.
+  # Returns a list of areas in Fukuoka city.
   #
-  # @return [Promise] which returns a list of wards in Fukuoka city.
-  wards: ->
+  # @return [Promise] which returns a list of areas in Fukuoka city.
+  area: ->
 
     run (page) ->
 
@@ -99,7 +133,39 @@ module.exports =
             $("a").map ->
               $("img[src=\"image/bw_tiikiimg.gif\"]", @).attr "alt"
             .toArray()
-      tasks
+
+      return tasks
+
+  # Returns a list of buildings in a given area.
+  #
+  # @param area [String] name of the area.
+  # @return [Promise] which returns a list of buildings in the area.
+  building: (area) ->
+
+    run (page) ->
+
+      tasks = generate_common_tasks page
+      tasks.push
+        url: "https://www.comnet-fukuoka.jp/web/rsvWTransInstSrchAreaAction.do"
+        action: ->
+          search_and_move page, area
+      tasks.push
+        url: "https://www.comnet-fukuoka.jp/web/rsvWTransInstSrchBuildAction.do"
+        action: ->
+          page.evaluate ->
+            document.body.innerHTML
+          .then (html) ->
+            $ = cheerio.load html
+            $("a").map ->
+              $("img[src=\"image/bw_buildingimg.gif\"]", @).attr "alt"
+            .toArray()
+            .filter (v) ->
+              v isnt IGNORED_KEYWORD
+
+      return tasks
+
+
+
 
   search: (ward, place, room) ->
 

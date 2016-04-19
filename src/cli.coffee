@@ -1,6 +1,11 @@
 #! /usr/bin/env coffee
-{wards, search} = require "../lib/scraper"
+{area, building, search} = require "../lib/scraper"
 
-wards().then (res) ->
+# area().then (res) ->
+#   console.log res
+# scraper "中央区", "舞鶴公園", "野球場"
+building("中央区").then (res) ->
   console.log res
 # scraper "中央区", "舞鶴公園", "野球場"
+.catch (reason) ->
+  console.error reason
