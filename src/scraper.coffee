@@ -25,9 +25,15 @@ IGNORED_KEYWORD = "すべて"
 SRC_CLOSED = "image/lw_closes.gif"
 SRC_AVAILABLE = "image/lw_emptybs.gif"
 SRC_OCCUPIED = "image/lw_finishs.gif"
+SRC_MAINTENANCE = "image/lw_keeps.gif"
+SRC_OUT_OF_DATE = "image/lw_kikangais.gif"
 STATUS_CLOSED = "closed"
 STATUS_AVAILABLE = "available"
 STATUS_OCCUPIED = "occupied"
+STATUS_MAINTENANCE = "maintenance"
+STATUS_OUT_OF_DATE = "out of date"
+
+WAITING_TIME = 1500
 
 # Execute a given tasks via PhantomJS.
 #
@@ -54,7 +60,7 @@ run = (generator) ->
                 if res is url
                   resolve res
                 else
-                  setTimeout checker, 1500
+                  setTimeout checker, WAITING_TIME
 
         page.open(ROOT_URL)
           .then ->
@@ -155,6 +161,25 @@ list_up = (page, keyword) ->
     .filter (v) ->
       v isnt IGNORED_KEYWORD
 
+
+trim = (str) ->
+  str.replace /^\s+|\s+$/g, ""
+
+
+check_status = (value) ->
+  switch value
+    when SRC_CLOSED
+      STATUS_CLOSED
+    when SRC_OCCUPIED
+      STATUS_OCCUPIED
+    when SRC_AVAILABLE
+      STATUS_AVAILABLE
+    when SRC_MAINTENANCE
+      STATUS_MAINTENANCE
+    when SRC_OUT_OF_DATE
+      STATUS_OUT_OF_DATE
+      
+
 module.exports =
 
   # Returns a list of areas in Fukuoka city.
@@ -250,7 +275,7 @@ module.exports =
                     : document.formCommonSrchDayWeekAction,
                     gRsvWTransInstSrchDayWeekAction, #{year}, #{month});}"""
                 .then ->
-                  setTimeout resolve, 1000
+                  setTimeout resolve, WAITING_TIME
                 .catch (reason) ->
                   reject reason
 
@@ -276,27 +301,53 @@ module.exports =
               tbody:nth-child(3) > tr:nth-child(3) > td:nth-child(2) >
               center > table""")
 
-            header = $("tr", table).first()
-            dates = header.children().map ->
-              $(@).text()
-            .toArray().slice 1
-
             res = {}
-            header.nextAll().each ->
-              left_item = $(@).children().first()
+            if table.length isnt 0
+              header = $("tr", table).first()
+              dates = header.children().map ->
+                trim $(@).text()
+              .toArray().slice 1
 
-              label = left_item.text()
-              left_item.nextAll().each (i) ->
-                unless dates[i] of res
-                  res[dates[i]] = {}
+              header.nextAll().each ->
+                left_item = $(@).children().first()
 
-                res[dates[i]][label] = switch $(@).children().attr("src")
-                  when SRC_CLOSED
-                    STATUS_CLOSED
-                  when SRC_OCCUPIED
-                    STATUS_OCCUPIED
-                  when SRC_AVAILABLE
-                    STATUS_AVAILABLE
+                label = trim left_item.text()
+                left_item.nextAll().each (i) ->
+                  unless dates[i] of res
+                    res[dates[i]] = {}
+
+                  res[dates[i]][label] = check_status(
+                    $(@).children().attr("src"))
+
+            else
+              table = $("""#disp > center > table:nth-child(5) >
+                tbody:nth-child(3) > tr > td:nth-child(2) > center > table""")
+
+              header = $("tr", table).first()
+              dates = header.children().map ->
+                trim $(@).text()
+              .toArray().slice 1
+
+              header.nextAll().each ->
+                left_item = $(@).children().first()
+
+                label = trim left_item.text()
+                res[label] = {}
+
+                left_item.nextAll().each (i) ->
+                  unless dates[i] of res[label]
+                    res[label][dates[i]] = {}
+
+                  status = null
+                  $(@).contents().each ->
+                    switch @.tagName
+                      when "img"
+                        status = check_status $(@).attr("src")
+
+                      when null
+                        time = trim $(@).text()
+                        if time.length isnt 0
+                          res[label][dates[i]][time] = status
 
             return res
       ]
