@@ -214,11 +214,11 @@ module.exports =
           list_up page, "bw_institutionimg"
       ]
 
-  search: (area, building, institution, date) ->
+  search: (area, building, institution, year, month, day) ->
 
     run (page) ->
 
-      generate_common_tasks page
+      tasks = generate_common_tasks page
       .concat [
         url: AREA_URL
         action: ->
@@ -231,10 +231,33 @@ module.exports =
         url: INSTITUTION_URL
         action: ->
           search_and_click page, institution
-      ,
+      ]
+
+      today = new Date()
+      if year isnt today.getFullYear() or month isnt today.getMonth()+1
+        tasks.push
+          url: DAY_WEEK_URL
+          action: ->
+            page.evaluate ->
+              document.body.innerHTML
+            .then ->
+              new Promise (resolve, reject) ->
+                page.evaluateJavaScript """
+                  function(){
+                    moveCalender(
+                    (_dom == 3) ?
+                    document.layers['disp'].document.formCommonSrchDayWeekAction
+                    : document.formCommonSrchDayWeekAction,
+                    gRsvWTransInstSrchDayWeekAction, #{year}, #{month});}"""
+                .then ->
+                  setTimeout resolve, 1000
+                .catch (reason) ->
+                  reject reason
+
+      tasks.concat [
         url: DAY_WEEK_URL
         action: ->
-          search_and_click page, date.toString()
+          search_and_click page, day.toString()
           .then ->
             page.evaluate ->
               action = if window._dom is 3
