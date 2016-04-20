@@ -1,7 +1,9 @@
 phantom = require "phantom"
 cheerio = require "cheerio"
 
+# Root URL.
 ROOT_URL = "https://www.comnet-fukuoka.jp/web/"
+
 ATTESTATION_URL =
   "https://www.comnet-fukuoka.jp/web/rsvWTransUserAttestationAction.do"
 VACANT_URL =
@@ -12,7 +14,12 @@ BUILDING_URL =
   "https://www.comnet-fukuoka.jp/web/rsvWTransInstSrchBuildAction.do"
 INSTITUTION_URL =
   "https://www.comnet-fukuoka.jp/web/rsvWTransInstSrchInstAction.do"
+DAY_WEEK_URL =
+  "https://www.comnet-fukuoka.jp/web/rsvWTransInstSrchDayWeekAction.do"
+RESULT_URL =
+  "https://www.comnet-fukuoka.jp/web/rsvWInstSrchVacantAction.do"
 
+# Ignored item name which measn "all".
 IGNORED_KEYWORD = "すべて"
 
 # Execute a given tasks via PhantomJS.
@@ -104,12 +111,12 @@ generate_common_tasks = (page) -> [
 ]
 
 
-# Create a task which searches a target and moves to it.
+# Create a task which searches a target link and clicks it.
 #
 # @param page [Page] Page object.
 # @param target [String] Keyward of the target.
 # @return [Promise] Promise object.
-search_and_move = (page, target) ->
+search_and_click = (page, target) ->
   page.evaluate ->
     document.body.innerHTML
   .then (html) ->
@@ -122,6 +129,23 @@ search_and_move = (page, target) ->
     script = "function() {" + href.substring("javaScript:".length) + ";}"
     page.evaluateJavaScript script
 
+
+# List up items which associated with a given keyword.
+#
+# @param page [Page] Page object.
+# @param keywork [String] keyword which is a file name of gif file w/o
+#   extentions.
+# @return [Promise] Promise object.
+list_up = (page, keyword) ->
+  page.evaluate ->
+    document.body.innerHTML
+  .then (html) ->
+    $ = cheerio.load html
+    $("a").map ->
+      $("img[src=\"image/#{keyword}.gif\"]", @).attr "alt"
+    .toArray()
+    .filter (v) ->
+      v isnt IGNORED_KEYWORD
 
 module.exports =
 
@@ -136,13 +160,7 @@ module.exports =
       .concat [
         url: AREA_URL
         action: ->
-          page.evaluate ->
-            document.body.innerHTML
-          .then (html) ->
-            $ = cheerio.load html
-            $("a").map ->
-              $("img[src=\"image/bw_tiikiimg.gif\"]", @).attr "alt"
-            .toArray()
+          list_up page, "bw_tiikiimg"
       ]
 
   # Returns a list of buildings in a given area.
@@ -157,19 +175,11 @@ module.exports =
       .concat [
         url: AREA_URL
         action: ->
-          search_and_move page, area
+          search_and_click page, area
       ,
         url: BUILDING_URL
         action: ->
-          page.evaluate ->
-            document.body.innerHTML
-          .then (html) ->
-            $ = cheerio.load html
-            $("a").map ->
-              $("img[src=\"image/bw_buildingimg.gif\"]", @).attr "alt"
-            .toArray()
-            .filter (v) ->
-              v isnt IGNORED_KEYWORD
+          list_up page, "bw_buildingimg"
       ]
 
   # Returns a list of institutions in a given area and building.
@@ -185,78 +195,51 @@ module.exports =
       .concat [
         url: AREA_URL
         action: ->
-          search_and_move page, area
+          search_and_click page, area
       ,
         url: BUILDING_URL
         action: ->
-          search_and_move page, building
+          search_and_click page, building
       ,
         url: INSTITUTION_URL
         action: ->
-          page.evaluate ->
-            document.body.innerHTML
-          .then (html) ->
-            $ = cheerio.load html
-            $("a").map ->
-              $("img[src=\"image/bw_institutionimg.gif\"]", @).attr "alt"
-            .toArray()
-            .filter (v) ->
-              v isnt IGNORED_KEYWORD
+          list_up page, "bw_institutionimg"
       ]
 
   search: (ward, place, room) ->
 
     run (page) ->
 
-      search_and_move = (target) ->
-        page.evaluate ->
-          document.body.innerHTML
-        .then (html) ->
-          $ = cheerio.load html
-          href = $("a").filter ->
-            name = $("img", @).attr "alt"
-            name.includes target or target.includes name
-          .attr "href"
-
-          script = "function() {" + href.substring("javaScript:".length) + ";}"
-          page.evaluateJavaScript script
-
-      [
-        url: ATTESTATION_URL
-        action: ->
-          page.evaluate ->
-            action = if window._dom is 3
-              document.layers['disp'].document.formWTransInstSrchVacantAction
-            else
-              document.formWTransInstSrchVacantAction
-            window.doAction action, gRsvWTransInstSrchVacantAction
-      ,
-        url: VACANT_URL
-        action: ->
-          page.evaluate ->
-            action = if window._dom is 3
-              document.layers['disp'].document.formWTransInstSrchAreaAction
-            else
-              document.formWTransInstSrchAreaAction
-            window.doAction action, gRsvWTransInstSrchAreaAction
-      ,
+      generate_common_tasks page
+      .concat [
         url: AREA_URL
         action: ->
-          search_and_move ward
+          search_and_click page, ward
       ,
         url: BUILDING_URL
         action: ->
-          search_and_move place
+          search_and_click page, place
       ,
         url: INSTITUTION_URL
         action: ->
-          search_and_move room
+          search_and_click page, room
       ,
-        url: "https://www.comnet-fukuoka.jp/web/rsvWTransInstSrchDayWeekAction.do"
+        url: DAY_WEEK_URL
+        action: ->
+          search_and_click page, 20.toString()
+          .then ->
+            page.evaluate ->
+              action = if window._dom is 3
+                document.layers['disp'].document.formCommonSrchDayWeekAction
+              else
+                document.formCommonSrchDayWeekAction
+              window.sendSelectDay action, gRsvWInstSrchVacantAction, 1
+      ,
+        url: RESULT_URL
         action: ->
           page.evaluate ->
             document.body.innerHTML
-          .then (html)->
+          .then (html) ->
             console.log html
             page.render "test.png"
       ]
