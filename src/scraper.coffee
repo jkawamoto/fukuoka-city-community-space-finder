@@ -22,6 +22,13 @@ RESULT_URL =
 # Ignored item name which measn "all".
 IGNORED_KEYWORD = "すべて"
 
+SRC_CLOSED = "image/lw_closes.gif"
+SRC_AVAILABLE = "image/lw_emptybs.gif"
+SRC_OCCUPIED = "image/lw_finishs.gif"
+STATUS_CLOSED = "closed"
+STATUS_AVAILABLE = "available"
+STATUS_OCCUPIED = "occupied"
+
 # Execute a given tasks via PhantomJS.
 #
 # @param generator [Function] takes a page object and generates tasks.
@@ -52,7 +59,7 @@ run = (generator) ->
         page.open(ROOT_URL)
           .then ->
             tasks = generator page
-            new Promise (resolve, _) ->
+            new Promise (resolve, reject) ->
               do runner = ->
                 t = tasks.shift()
                 console.log "move to", t.url
@@ -63,6 +70,7 @@ run = (generator) ->
                     resolve res
                 .catch (reason) ->
                   console.log reason
+                  reject reason
 
           .then (res) ->
             page.close()
@@ -73,7 +81,7 @@ run = (generator) ->
             console.error reason
             # Clean up.
             page.close()
-            ph.exit()
+            instance.exit()
             reject reason
 
       .catch (reason) ->
@@ -206,7 +214,7 @@ module.exports =
           list_up page, "bw_institutionimg"
       ]
 
-  search: (ward, place, room) ->
+  search: (area, building, institution, date) ->
 
     run (page) ->
 
@@ -214,19 +222,19 @@ module.exports =
       .concat [
         url: AREA_URL
         action: ->
-          search_and_click page, ward
+          search_and_click page, area
       ,
         url: BUILDING_URL
         action: ->
-          search_and_click page, place
+          search_and_click page, building
       ,
         url: INSTITUTION_URL
         action: ->
-          search_and_click page, room
+          search_and_click page, institution
       ,
         url: DAY_WEEK_URL
         action: ->
-          search_and_click page, 20.toString()
+          search_and_click page, date.toString()
           .then ->
             page.evaluate ->
               action = if window._dom is 3
@@ -240,6 +248,37 @@ module.exports =
           page.evaluate ->
             document.body.innerHTML
           .then (html) ->
-            console.log html
-            page.render "test.png"
+            $ = cheerio.load html
+            table = $("""#disp > center > table:nth-child(5) >
+              tbody:nth-child(3) > tr:nth-child(3) > td:nth-child(2) >
+              center > table""")
+
+            header = $("tr", table).first()
+            dates = header.children().map ->
+              $(@).text()
+            .toArray().slice 1
+
+            res = {}
+            header.nextAll().each ->
+              left_item = $(@).children().first()
+
+              label = left_item.text()
+              left_item.nextAll().each (i) ->
+                unless dates[i] of res
+                  res[dates[i]] = {}
+
+                res[dates[i]][label] = switch $(@).children().attr("src")
+                  when SRC_CLOSED
+                    STATUS_CLOSED
+                  when SRC_OCCUPIED
+                    STATUS_OCCUPIED
+                  when SRC_AVAILABLE
+                    STATUS_AVAILABLE
+
+            return res
       ]
+
+  STATUS:
+    CLOSED: STATUS_CLOSED
+    OCCUPIED: STATUS_OCCUPIED
+    AVAILABLE: STATUS_AVAILABLE
