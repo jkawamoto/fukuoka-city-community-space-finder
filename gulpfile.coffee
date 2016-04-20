@@ -32,14 +32,7 @@ gulp.task "lib", ["clean"], ->
     .pipe gulp.dest "./lib/"
 
 
-gulp.task "resource", ["clean"], ->
-  gulp.src ["./src/*.yml", "./src/*.yaml"]
-    .pipe yaml()
-    .pipe gulp.dest "./lib/"
-
-
-
-gulp.task "build", ["bin", "lib", "resource"]
+gulp.task "build", ["bin", "lib"]
 
 
 gulp.task "default", ["build"]
