@@ -1,29 +1,45 @@
 {
-  "name": "community-centre-search-fukuoka",
+  "name": "fukuoka-city-community-space-finder",
   "version": "0.0.1",
-  "description": "Search available community centres in Fukuoka.",
-  "main": "index.js",
+  "description": "Find Community Spaces in Fukuoka City and check reservation status of them.",
+  "keywords": [
+    "open data",
+    "government data",
+    "scraping"
+  ],
+  "main": "./lib/scraper.js",
+  "bin": {
+    "csf": "./bin/cli.js"
+  },
   "author": "Junpei Kawamoto <kawamoto.junpei@gmail.com>",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "gulp",
-    "coffee": "coffee",
     "exec": "./bin/cli.js",
     "doc": "codo src"
   },
+  "files": [
+    "bin",
+    "lib",
+    "src",
+    "gulpfile.coffee",
+    "LICENSE",
+    "package.json",
+    "README.md"
+  ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/jkawamoto/community-centre-search-fukuoka.git"
+    "url": "https://github.com/jkawamoto/fukuoka-city-community-space-finder.git"
   },
-  "homepage": "https://github.com/jkawamoto/community-centre-search-fukuoka",
+  "homepage": "https://github.com/jkawamoto/fukuoka-city-community-space-finder",
   "bugs": {
-    "url": "https://github.com/jkawamoto/community-centre-search-fukuoka/issues"
+    "url": "https://github.com/jkawamoto/fukuoka-city-community-space-finder/issues"
   },
   "dependencies": {
-    "argv": "0.0.2",
     "cheerio": "^0.20.0",
     "coffee-script": "^1.10.0",
-    "phantom": "^2.0.10"
+    "phantom": "^2.0.10",
+    "yargs": "^4.6.0"
   },
   "devDependencies": {
     "codo": "^2.1.0",

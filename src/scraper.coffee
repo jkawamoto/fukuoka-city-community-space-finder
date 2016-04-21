@@ -1,3 +1,12 @@
+#
+# scraper.coffee
+#
+# Copyright (c) 2016 Junpei Kawamoto
+#
+# This software is released under the MIT License.
+#
+# http://opensource.org/licenses/mit-license.php
+#
 phantom = require "phantom"
 cheerio = require "cheerio"
 
@@ -73,14 +82,14 @@ run = (generator) ->
             new Promise (resolve, reject) ->
               do runner = ->
                 t = tasks.shift()
-                console.log "move to", t.url
+                # console.log "move to", t.url
                 wait_moved_to(t.url).then(t.action).then (res) ->
                   if tasks.length isnt 0
                     runner()
                   else
                     resolve res
                 .catch (reason) ->
-                  console.log reason
+                  # console.log reason
                   reject reason
 
           .then (res) ->
