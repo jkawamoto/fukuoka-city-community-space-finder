@@ -1,5 +1,5 @@
 #! /usr/bin/env coffee
-{area, building, institution, search} = require "../lib/scraper"
+{area, building, institution, status} = require "../lib/scraper"
 
 # area().then (res) ->
 #   console.log res
@@ -10,7 +10,7 @@
 # institution("中央区", "舞鶴公園").then (res) ->
 #   console.log res
 # search "中央区", "舞鶴公園", "野球場", 2016, 5, 25
-search "中央区", "舞鶴公園", "テニスコート１", 2016, 4, 21
+status "中央区", "舞鶴公園", "テニスコート１", 2016, 4, 21
 # search "中央区", "舞鶴公園", "球技場", 2016, 5, 25
 .then (res) ->
   console.log res

@@ -27,11 +27,13 @@ SRC_AVAILABLE = "image/lw_emptybs.gif"
 SRC_OCCUPIED = "image/lw_finishs.gif"
 SRC_MAINTENANCE = "image/lw_keeps.gif"
 SRC_OUT_OF_DATE = "image/lw_kikangais.gif"
-STATUS_CLOSED = "closed"
-STATUS_AVAILABLE = "available"
-STATUS_OCCUPIED = "occupied"
-STATUS_MAINTENANCE = "maintenance"
-STATUS_OUT_OF_DATE = "out of date"
+
+STATUS =
+  CLOSED: "closed"
+  AVAILABLE: "available"
+  OCCUPIED: "occupied"
+  MAINTENANCE: "maintenance"
+  OUT_OF_DATE: "out of date"
 
 WAITING_TIME = 1500
 
@@ -53,7 +55,7 @@ run = (generator) ->
         # @return [Promise] invoked when the URL will be match to the given
         #     url.
         wait_moved_to = (url) ->
-          new Promise (resolve, _) ->
+          new Promise (resolve, reject) ->
             do checker = ->
               page.property("url").then (res) ->
                 res = res.split(";")[0]
@@ -61,6 +63,9 @@ run = (generator) ->
                   resolve res
                 else
                   setTimeout checker, WAITING_TIME
+
+              .catch (reason) ->
+                reject reason
 
         page.open(ROOT_URL)
           .then ->
@@ -137,7 +142,7 @@ search_and_click = (page, target) ->
     $ = cheerio.load html
     href = $("a").filter ->
       name = $("img", @).attr "alt"
-      name.includes target or target.includes name
+      name.includes(target) or target.includes(name)
     .attr "href"
 
     script = "function() {" + href.substring("javaScript:".length) + ";}"
@@ -162,23 +167,31 @@ list_up = (page, keyword) ->
       v isnt IGNORED_KEYWORD
 
 
+# Trim a given string.
+#
+# @param str [String] a string.
+# @return [String] the trimmed string.
 trim = (str) ->
   str.replace /^\s+|\s+$/g, ""
 
 
+# Return a status message from a src url.
+#
+# @param value [String] a src url.
+# @return [String] status message.
 check_status = (value) ->
   switch value
     when SRC_CLOSED
-      STATUS_CLOSED
+      STATUS.CLOSED
     when SRC_OCCUPIED
-      STATUS_OCCUPIED
+      STATUS.OCCUPIED
     when SRC_AVAILABLE
-      STATUS_AVAILABLE
+      STATUS.AVAILABLE
     when SRC_MAINTENANCE
-      STATUS_MAINTENANCE
+      STATUS.MAINTENANCE
     when SRC_OUT_OF_DATE
-      STATUS_OUT_OF_DATE
-      
+      STATUS.OUT_OF_DATE
+
 
 module.exports =
 
@@ -239,7 +252,16 @@ module.exports =
           list_up page, "bw_institutionimg"
       ]
 
-  search: (area, building, institution, year, month, day) ->
+  # Search reservation statuses of a given institution in a given date.
+  #
+  # @param area [String] area name obtained by area method.
+  # @param building [String] building name obtained by building method.
+  # @param institution [String] institution name obtained by institution method.
+  # @param year [Integer] Year.
+  # @param month [Integer] Month.
+  # @param day [Integer] Day.
+  # @return [Promise] which returns the result via then method.
+  status: (area, building, institution, year, month, day) ->
 
     run (page) ->
 
@@ -352,7 +374,5 @@ module.exports =
             return res
       ]
 
-  STATUS:
-    CLOSED: STATUS_CLOSED
-    OCCUPIED: STATUS_OCCUPIED
-    AVAILABLE: STATUS_AVAILABLE
+  # Constants of status.
+  STATUS: STATUS
