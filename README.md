@@ -114,14 +114,14 @@ you will receive the following result.
 
 Method
 -------
-### area()
+### `area()`
 Returns a list of areas in Fukuoka city.
 
 #### Returns
 A Promise object which returns a list of areas in Fukuoka city.
 
 
-### building(area)
+### `building(area)`
 Returns a list of buildings in a given area.
 
 #### Args
@@ -131,7 +131,7 @@ Returns a list of buildings in a given area.
 A Promise object which returns a list of buildings in the area.
 
 
-### institution(area, building)
+### `institution(area, building)`
 Returns a list of institutions in a given area and building.
 
 #### Args
@@ -142,7 +142,7 @@ Returns a list of institutions in a given area and building.
 A Promise object which returns a list of institutions.
 
 
-### status(area, building, institution, year, month, day)
+### `status(area, building, institution, year, month, day)`
 Search reservation statuses of a given institution in a given date.
 
 #### Args
@@ -222,7 +222,7 @@ Options:
 ~~~
 
 ### state
-Search reservation status. 
+Search reservation status.
 
 ~~~
 csf state
