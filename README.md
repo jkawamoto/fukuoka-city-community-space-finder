@@ -6,6 +6,7 @@ Fukuoka City Community Space Finder
 
 Find Community Spaces in Fukuoka City and check reservation status of them.
 If you want to try it as a stand-alone command, see *Running as a stand-alone command* section.
+(日本語の説明は[こちら](http://qiita.com/jkawamoto/items/f1dda4fb0f4d2018ae76))
 
 Install
 ----------
