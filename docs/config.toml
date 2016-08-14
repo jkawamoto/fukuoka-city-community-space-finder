@@ -1,0 +1,10 @@
+baseurl = "https://jkawamoto.github.io/fukuoka-city-community-space-finder/"
+languageCode = "en-us"
+title = "Fukuoka City Community Space Finder"
+theme = "purehugo"
+Paginate = 10
+
+[params]
+  githubName = "jkawamoto/fukuoka-city-community-space-finder"
+  description = "Find Community Spaces in Fukuoka City and check reservation status of them"
+  google_analytics = "UA-82315630-1"
