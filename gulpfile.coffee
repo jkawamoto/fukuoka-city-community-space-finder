@@ -21,7 +21,7 @@ gulp.task "clean", ->
 gulp.task "bin", ["clean"], ->
   gulp.src "./src/cli.coffee"
     .pipe coffee()
-    .pipe chmod 755
+    .pipe chmod 0o755
     .pipe inject.prepend "#!/usr/bin/env node\n"
     .pipe gulp.dest "./bin/"
 
