@@ -8,3 +8,4 @@ Paginate = 10
   githubName = "jkawamoto/fukuoka-city-community-space-finder"
   description = "Find Community Spaces in Fukuoka City and check reservation status of them"
   google_analytics = "UA-82315630-1"
+  image = "img/image.png"
