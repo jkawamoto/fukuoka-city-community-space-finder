@@ -1,14 +1,21 @@
-Fukuoka City Community Space Finder
-=====================================
-[![MIT License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat)](LICENSE)
-[![npm version](https://badge.fury.io/js/fukuoka-city-community-space-finder.svg)](https://badge.fury.io/js/fukuoka-city-community-space-finder)
-[![Code Climate](https://codeclimate.com/github/jkawamoto/fukuoka-city-community-space-finder/badges/gpa.svg)](https://codeclimate.com/github/jkawamoto/fukuoka-city-community-space-finder)
-[![Japanese](https://img.shields.io/badge/qiita-%E6%97%A5%E6%9C%AC%E8%AA%9E-brightgreen.svg)](http://qiita.com/jkawamoto/items/f1dda4fb0f4d2018ae76)
+---
+title: Fukuoka City Community Space Finder
+type: homepage
+date: 2016-04-20
+lastmod: 2017-10-28
+weight: 1
+description: >-
+  Find Community Spaces in Fukuoka City and check reservation status of them.
+  If you want to try it as a stand-alone command, see Running as a stand-alone command section.
+---
+[{{%img "https://img.shields.io/badge/license-MIT-blue.svg?style=flat" "MIT License" 78 20 %}}](https://github.com/jkawamoto/fukuoka-city-community-space-finder/blob/master/LICENSE)
+[{{%img "https://badge.fury.io/js/fukuoka-city-community-space-finder.svg" "npm version" 126 20 %}}](https://badge.fury.io/js/fukuoka-city-community-space-finder)
+[{{%img "https://img.shields.io/badge/qiita-%E6%97%A5%E6%9C%AC%E8%AA%9E-brightgreen.svg" "Japanese" 76 20 %}}](http://qiita.com/jkawamoto/items/f1dda4fb0f4d2018ae76)
 
 Find Community Spaces in Fukuoka City and check reservation status of them.
 If you want to try it as a stand-alone command, see *Running as a stand-alone command* section.
 
-[<img src="img/screenshot.png" style="width: 80%;"/>](https://www.comnet-fukuoka.jp/)
+[{{%img "img/screenshot.png" "Comnet Fukuoka" 528 341 true %}}](https://www.comnet-fukuoka.jp/)
 
 Install
 ----------
@@ -185,7 +192,7 @@ Commands:
   state        Search reservation status.
 
 Options:
-  --help  Show help                                                    [boolean]
+  --help  Show help                                     [boolean]
 ~~~
 
 Each command is related to same name function.
@@ -197,7 +204,7 @@ Show the list of areas.
 csf area
 
 Options:
-  --help  Show help                                                    [boolean]
+  --help  Show help                                     [boolean]
 ~~~
 
 ### building
@@ -207,7 +214,7 @@ Show a list of buildings in an area.
 csf building
 
 Options:
-  --help  Show help                                                    [boolean]
+  --help  Show help                                     [boolean]
   --area  Name of area.
 ~~~
 
@@ -218,9 +225,9 @@ Show a list of institutions in a building.
 csf institution
 
 Options:
-  --help      Show help                                                [boolean]
-  --area      Name of area.                                           [required]
-  --building  Name of building.                                       [required]
+  --help      Show help                                 [boolean]
+  --area      Name of area.                            [required]
+  --building  Name of building.                        [required]
 ~~~
 
 ### state
@@ -230,18 +237,18 @@ Search reservation status.
 csf state
 
 Options:
-  --help         Show help                                             [boolean]
-  --area         Name of area.                                        [required]
-  --building     Name of building.                                    [required]
-  --institution  Name of institution.                                 [required]
-  --year         Year.                                          [default: today]
-  --month        Month.                                         [default: today]
-  --day          Day.                                           [default: today]
+  --help         Show help                              [boolean]
+  --area         Name of area.                         [required]
+  --building     Name of building.                     [required]
+  --institution  Name of institution.                  [required]
+  --year         Year.                           [default: today]
+  --month        Month.                          [default: today]
+  --day          Day.                            [default: today]
 ~~~
 
 License
 --------
-This software is released under the MIT License, see [LICENSE](LICENSE).
+This software is released under the MIT License, see [LICENSE](https://github.com/jkawamoto/fukuoka-city-community-space-finder/blob/master/LICENSE).
 
 Acknowledgement
 ----------------
